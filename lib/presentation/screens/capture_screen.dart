@@ -21,7 +21,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
   int _countdown = 3;
   bool _isFlashScreen = false;
   bool _isProcessing = false;
-  bool _isInitialized = false;
+  bool _hasStartedCapture = false; // ⭐ Track apakah sudah mulai
 
   @override
   void initState() {
@@ -35,30 +35,26 @@ class _CaptureScreenState extends State<CaptureScreen> {
       _controller = await _cameraService.setupController();
 
       if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
+        setState(() {});
+        // ⭐ AUTO START setelah kamera siap
+        _startCaptureSequence();
       }
     } catch (e) {
       debugPrint('Camera error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Kamera error: $e')));
-      }
     }
   }
 
-  // ⭐ FIXED: Pisahkan inisialisasi dan capture sequence
+  // ⭐ FIXED: Auto start tanpa tombol
   Future<void> _startCaptureSequence() async {
+    if (_hasStartedCapture) return; // Hindari double start
+    _hasStartedCapture = true;
+
     // Delay untuk UI siap
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 500));
 
     if (!mounted) return;
-
     final provider = context.read<BoothProvider>();
 
-    // Tentukan range foto yang akan di-capture
     final startIndex = provider.isRetakeMode ? provider.currentPhotoIndex : 0;
     final endIndex = provider.isRetakeMode
         ? provider.currentPhotoIndex
@@ -67,7 +63,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
     for (int i = startIndex; i <= endIndex; i++) {
       if (!mounted) break;
 
-      // ⭐ FIXED: Set index TERLEBIH DAHULU sebelum countdown
+      // Update index di provider
       provider.selectPhotoForRetake(i);
 
       // Countdown 3-2-1
@@ -79,16 +75,15 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
       if (!mounted) break;
 
-      // Capture photo
+      // Capture
       await _captureSinglePhoto(provider);
 
-      // ⭐ FIXED: Pindah ke foto berikutnya SETELAH capture berhasil
+      // Jeda antar foto
       if (i < endIndex) {
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 800));
       }
     }
 
-    // ⭐ FIXED: Selesaikan capture hanya jika masih mounted
     if (mounted) {
       provider.finishCapture();
     }
@@ -104,17 +99,12 @@ class _CaptureScreenState extends State<CaptureScreen> {
       final filePath = await _cameraService.capturePhoto();
       debugPrint('✅ Photo captured: $filePath');
 
-      // ⭐ PENTING: Simpan foto ke provider
+      // ⭐ PENTING: Simpan dengan index yang benar
       provider.savePhoto(filePath);
     } catch (e) {
       debugPrint('❌ Capture error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal mengambil foto: $e')));
-      }
     } finally {
-      await Future.delayed(const Duration(milliseconds: 150));
+      await Future.delayed(const Duration(milliseconds: 100));
       if (mounted) {
         setState(() {
           _isFlashScreen = false;
@@ -141,60 +131,21 @@ class _CaptureScreenState extends State<CaptureScreen> {
         child: SafeArea(
           child: Stack(
             children: [
-              _buildMainContent(provider),
+              Column(
+                children: [
+                  const SizedBox(height: 24),
+                  _buildProgressChip(provider),
+                  const SizedBox(height: 24),
+                  Expanded(child: _buildCameraPreview()),
+                  const SizedBox(height: 48),
+                  // ⭐ HAPUS: Tombol manual tidak perlu lagi
+                ],
+              ),
               if (_isFlashScreen) _buildFlashOverlay(),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildMainContent(BoothProvider provider) {
-    return Column(
-      children: [
-        const SizedBox(height: 24),
-
-        // Progress Indicator
-        _buildProgressChip(provider),
-
-        const SizedBox(height: 24),
-
-        // Camera Preview
-        Expanded(child: _buildCameraPreview()),
-
-        const SizedBox(height: 48),
-
-        // ⭐ TAMBAHAN: Tombol Start Capture (untuk testing/debugging)
-        if (_isInitialized && !_isProcessing)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: ElevatedButton(
-              onPressed: _startCaptureSequence,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.camera_alt),
-                  SizedBox(width: 8),
-                  Text(
-                    'MULAI CAPTURE',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-        const SizedBox(height: 24),
-      ],
     );
   }
 
@@ -239,7 +190,6 @@ class _CaptureScreenState extends State<CaptureScreen> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Camera feed
         FittedBox(
           fit: BoxFit.cover,
           child: SizedBox(
@@ -248,8 +198,6 @@ class _CaptureScreenState extends State<CaptureScreen> {
             child: CameraPreview(_controller!),
           ),
         ),
-
-        // Countdown overlay
         if (!_isFlashScreen && !_isProcessing)
           Center(
             child: Text(
@@ -273,14 +221,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
   Widget _buildLoadingPreview() {
     return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(color: AppColors.surface),
-          SizedBox(height: 16),
-          Text('Menyiapkan kamera...', style: TextStyle(color: Colors.white70)),
-        ],
-      ),
+      child: CircularProgressIndicator(color: AppColors.surface),
     );
   }
 

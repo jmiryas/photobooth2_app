@@ -96,11 +96,15 @@ class BoothProvider extends ChangeNotifier {
         _currentPhotoIndex < _capturedPhotos.length) {
       _capturedPhotos[_currentPhotoIndex] = filePath;
 
-      // Update session model
+      // ⭐ PENTING: Update session model juga
       if (_currentSession != null) {
-        final newPaths = List<String>.from(_capturedPhotos);
-        _currentSession = _currentSession!.copyWith(photoPaths: newPaths);
+        _currentSession = _currentSession!.copyWith(
+          photoPaths: List<String>.from(_capturedPhotos),
+        );
       }
+
+      debugPrint('📸 Photo saved at index $_currentPhotoIndex: $filePath');
+      debugPrint('📸 All photos: $_capturedPhotos');
 
       notifyListeners();
     }

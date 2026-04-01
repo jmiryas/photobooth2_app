@@ -1,4 +1,3 @@
-// lib/presentation/screens/main_booth_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../domain/enums/booth_state.dart';
@@ -37,13 +36,13 @@ class MainBoothScreen extends StatelessWidget {
 
     return Scaffold(
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 300), // ⭐ Lebih cepat
         transitionBuilder: (child, animation) {
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(
               position: Tween<Offset>(
-                begin: const Offset(0, 0.05),
+                begin: const Offset(0.05, 0), // ⭐ Horizontal slide
                 end: Offset.zero,
               ).animate(animation),
               child: child,

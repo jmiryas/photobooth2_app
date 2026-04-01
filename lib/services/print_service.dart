@@ -1,9 +1,22 @@
-// lib/services/print_service.dart
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../core/constants/app_constants.dart';
+
+// ⭐ TAMBAHKAN: Enum PrintStatus
+enum PrintStatus { idle, connecting, connected, printing, completed, error }
+
+// ⭐ TAMBAHKAN: Class PrintStatusData
+class PrintStatusData {
+  final PrintStatus status;
+  final String message;
+
+  PrintStatusData(this.status, this.message);
+}
 
 class PrintService {
   final BlueThermalPrinter _printer = BlueThermalPrinter.instance;
@@ -55,7 +68,6 @@ class PrintService {
       try {
         targetDevice = devices.firstWhere((d) => d.name == target);
       } catch (_) {
-        // Fallback ke device pertama yang bukan unknown
         targetDevice = devices.firstWhere(
           (d) => d.name != null && d.name!.isNotEmpty,
           orElse: () => devices.first,
@@ -67,7 +79,6 @@ class PrintService {
         'Menghubungkan ke ${targetDevice.name}...',
       );
 
-      // Check koneksi existing
       final bool? isConnected = await _printer.isConnected;
 
       if (isConnected == true &&
@@ -76,12 +87,10 @@ class PrintService {
         return true;
       }
 
-      // Disconnect jika ada koneksi lain
       if (isConnected == true) {
         await _printer.disconnect();
       }
 
-      // Connect baru
       await _printer.connect(targetDevice);
       await Future.delayed(const Duration(milliseconds: 500));
 
@@ -114,17 +123,36 @@ class PrintService {
     }
   }
 
-  /// Print image (Uint8List)
+  /// Print image
   Future<bool> printImage(Uint8List imageBytes, {String? label}) async {
     if (!await _ensureConnected()) return false;
 
     try {
       _emitStatus(PrintStatus.printing, label ?? 'Mencetak...');
 
-      // Convert bytes ke format yang bisa diprint
-      // Note: blue_thermal_printer butuh path file, jadi kita simpan dulu
-      // Ini akan dihandle di ThermalPrintEngine
+      // Simpan ke file temporary
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File(
+        path.join(
+          tempDir.path,
+          'print_${DateTime.now().millisecondsSinceEpoch}.png',
+        ),
+      );
 
+      await tempFile.writeAsBytes(imageBytes);
+
+      // Print menggunakan blue_thermal_printer
+      await _printer.printImage(tempFile.path);
+
+      // Feed paper
+      await feedPaper(3);
+
+      // Cleanup
+      try {
+        await tempFile.delete();
+      } catch (_) {}
+
+      _emitStatus(PrintStatus.completed, 'Cetak selesai');
       return true;
     } catch (e) {
       _emitStatus(PrintStatus.error, 'Print failed: $e');
@@ -145,9 +173,9 @@ class PrintService {
       _printer.printNewLine();
 
       if (center) {
-        _printer.printCustom(text, size, 1); // 1 = center
+        _printer.printCustom(text, size, 1);
       } else {
-        _printer.printCustom(text, size, 0); // 0 = left
+        _printer.printCustom(text, size, 0);
       }
 
       return true;
@@ -161,16 +189,6 @@ class PrintService {
   Future<void> feedPaper(int lines) async {
     for (int i = 0; i < lines; i++) {
       _printer.printNewLine();
-    }
-  }
-
-  /// Cut paper (jika printer support)
-  Future<void> cutPaper() async {
-    try {
-      // ESC/POS cut command
-      // _printer.printCut();
-    } catch (e) {
-      debugPrint('Cut paper not supported: $e');
     }
   }
 
@@ -192,13 +210,4 @@ class PrintService {
     disconnect();
     _statusController?.close();
   }
-}
-
-enum PrintStatus { idle, connecting, connected, printing, completed, error }
-
-class PrintStatusData {
-  final PrintStatus status;
-  final String message;
-
-  PrintStatusData(this.status, this.message);
 }
