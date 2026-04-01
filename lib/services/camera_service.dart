@@ -77,19 +77,37 @@ class CameraService {
     }
 
     try {
+      // ⭐ PENTING: Pastikan controller masih valid
+      if (!_controller!.value.isInitialized) {
+        throw CameraServiceException('Camera not initialized');
+      }
+
       final XFile photo = await _controller!.takePicture();
 
-      // Copy ke app directory dengan nama yang lebih baik
+      // ⭐ PENTING: Verifikasi file exists
+      final tempFile = File(photo.path);
+      if (!await tempFile.exists()) {
+        throw CameraServiceException('Captured file does not exist');
+      }
+
+      // Copy ke app directory
       final appDir = await getTemporaryDirectory();
       final fileName = 'capture_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final newPath = path.join(appDir.path, fileName);
 
-      final savedFile = await File(photo.path).copy(newPath);
+      final savedFile = await tempFile.copy(newPath);
 
-      debugPrint('Photo saved: ${savedFile.path}');
+      // ⭐ HAPUS file temporary asli
+      try {
+        await tempFile.delete();
+      } catch (_) {}
+
+      debugPrint('✅ Photo saved: ${savedFile.path}');
       return savedFile.path;
     } on CameraException catch (e) {
-      throw CameraServiceException('Failed to capture: ${e.description}');
+      throw CameraServiceException('Camera error: ${e.description}');
+    } catch (e) {
+      throw CameraServiceException('Failed to capture: $e');
     }
   }
 

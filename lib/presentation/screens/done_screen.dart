@@ -179,10 +179,10 @@ class _DoneScreenState extends State<DoneScreen> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: isPrinting
-                  ? AppColors.primary.withOpacity(0.1)
+                  ? AppColors.primary.withValues(alpha: 0.1)
                   : (_hasPrinted
-                        ? AppColors.success.withOpacity(0.1)
-                        : AppColors.warning.withOpacity(0.1)),
+                        ? AppColors.success.withValues(alpha: 0.1)
+                        : AppColors.warning.withValues(alpha: 0.1)),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -328,7 +328,7 @@ class _DoneScreenState extends State<DoneScreen> {
                 ? []
                 : [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.4),
+                      color: AppColors.primary.withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -340,7 +340,7 @@ class _DoneScreenState extends State<DoneScreen> {
               Icon(
                 Icons.power_settings_new_rounded,
                 color: isPrinting
-                    ? AppColors.textSub.withOpacity(0.5)
+                    ? AppColors.textSub.withValues(alpha: 0.5)
                     : Colors.white,
                 size: 24,
               ),
@@ -351,7 +351,7 @@ class _DoneScreenState extends State<DoneScreen> {
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: isPrinting
-                      ? AppColors.textSub.withOpacity(0.5)
+                      ? AppColors.textSub.withValues(alpha: 0.5)
                       : Colors.white,
                   letterSpacing: 1.5,
                 ),

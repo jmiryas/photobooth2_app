@@ -232,7 +232,7 @@ class PreviewScreen extends StatelessWidget {
                   Icons.replay_rounded,
                   color: provider.canRetake
                       ? AppColors.primary
-                      : AppColors.textSub.withOpacity(0.3),
+                      : AppColors.textSub.withValues(alpha: 0.3),
                   size: 28,
                 ),
               ),
@@ -253,7 +253,7 @@ class PreviewScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(100),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -335,7 +335,7 @@ class _PhotoSlot extends StatelessWidget {
 
               // Selection overlay
               if (isSelected)
-                Container(color: AppColors.primary.withOpacity(0.3)),
+                Container(color: AppColors.primary.withValues(alpha: 0.3)),
               if (isSelected)
                 const Center(
                   child: Icon(

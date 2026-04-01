@@ -93,12 +93,12 @@ class SelectTemplateScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 20),
           decoration: BoxDecoration(
             gradient: isEnabled ? AppColors.primaryGradient : null,
-            color: isEnabled ? null : AppColors.surface.withOpacity(0.5),
+            color: isEnabled ? null : AppColors.surface.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(100),
             boxShadow: isEnabled
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.4),
+                      color: AppColors.primary.withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -115,7 +115,7 @@ class SelectTemplateScreen extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                   color: isEnabled
                       ? AppColors.surface
-                      : AppColors.textSub.withOpacity(0.5),
+                      : AppColors.textSub.withValues(alpha: 0.5),
                   letterSpacing: 1.5,
                 ),
               ),
@@ -124,7 +124,7 @@ class SelectTemplateScreen extends StatelessWidget {
                 Icons.arrow_forward_rounded,
                 color: isEnabled
                     ? AppColors.surface
-                    : AppColors.textSub.withOpacity(0.5),
+                    : AppColors.textSub.withValues(alpha: 0.5),
                 size: 20,
               ),
             ],
@@ -217,12 +217,12 @@ class _TemplatePreview extends StatelessWidget {
       margin: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: isSelected
-            ? AppColors.primary.withOpacity(0.15)
+            ? AppColors.primary.withValues(alpha: 0.15)
             : AppColors.surfaceVariant,
         border: Border.all(
           color: isSelected
               ? AppColors.primary
-              : AppColors.textSub.withOpacity(0.3),
+              : AppColors.textSub.withValues(alpha: 0.3),
           width: 1.5,
         ),
         borderRadius: BorderRadius.circular(6),
@@ -261,7 +261,7 @@ class _TemplatePreview extends StatelessWidget {
         color: AppColors.surface,
         border: Border.all(
           color: isSelected
-              ? AppColors.primary.withOpacity(0.5)
+              ? AppColors.primary.withValues(alpha: 0.5)
               : AppColors.surfaceVariant,
           width: 2,
         ),

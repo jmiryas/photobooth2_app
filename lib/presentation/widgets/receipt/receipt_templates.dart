@@ -2,10 +2,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../core/theme/app_colors.dart';
+// import '../../../core/constants/app_constants.dart';
+// import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../domain/enums/template_type.dart';
+// import '../../../domain/enums/template_type.dart';
 import '../../../domain/models/transaction_model.dart';
 
 /// Base receipt widget dengan zigzag edges
@@ -1248,7 +1248,7 @@ class T4ConcertReceipt extends StatelessWidget {
                     style: GoogleFonts.dmMono(
                       fontSize: 6.5,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ),

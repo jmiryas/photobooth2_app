@@ -106,7 +106,7 @@ class _IdleScreenState extends State<IdleScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -215,7 +215,7 @@ class _IdleScreenState extends State<IdleScreen> {
                 decoration: BoxDecoration(
                   color: _currentPage == index
                       ? AppColors.primary
-                      : AppColors.primary.withOpacity(0.3),
+                      : AppColors.primary.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
               );
@@ -239,7 +239,7 @@ class _IdleScreenState extends State<IdleScreen> {
             borderRadius: BorderRadius.circular(100),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.4),
+                color: AppColors.primary.withValues(alpha: 0.4),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
               ),

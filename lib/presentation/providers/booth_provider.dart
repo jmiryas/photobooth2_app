@@ -106,13 +106,22 @@ class BoothProvider extends ChangeNotifier {
     }
   }
 
+  // ⭐ FIXED: Method nextPhoto yang benar
   void nextPhoto() {
+    // Hanya increment jika belum di foto terakhir
     if (_currentPhotoIndex < totalPhotosNeeded - 1) {
       _currentPhotoIndex++;
       notifyListeners();
-    } else {
-      finishCapture();
     }
+    // ⭐ HAPUS: Jangan panggil finishCapture() di sini
+    // Biarkan capture_screen yang mengontrol kapan selesai
+  }
+
+  // ⭐ TAMBAHAN: Method untuk manual finish jika diperlukan
+  void completeCapture() {
+    _isRetakeMode = false;
+    _currentPhotoIndex = 0;
+    _transitionTo(BoothState.preview);
   }
 
   void finishCapture() {
@@ -159,7 +168,7 @@ class BoothProvider extends ChangeNotifier {
     _paymentTimer?.cancel();
 
     // Create transaction
-    final transaction = TransactionModel(
+    TransactionModel(
       orderNumber: TransactionModel.generateOrderNumber(),
       timestamp: DateTime.now(),
       items: [
